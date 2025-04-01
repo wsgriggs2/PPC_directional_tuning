@@ -13,7 +13,7 @@
 
 ------------
 ## Associated dataset
-Available from CaltechData: [Click here to download](https://doi.org/10.22002/9e80t-xhc12). 
+Available from CaltechData: [Click here to download](https://doi.org/10.22002/p5jan-02r60). 
 
 Packaged as .zip file in data hierarchy used by MATLAB functions. Once downloaded, extract contents from the .zip file.
    
@@ -39,7 +39,7 @@ Tested on MATLAB R2024b on Mac Sequoia 15.3.2
 Please send feedback and suggestions to: [wsgriggs@gmail.com](mailto:wsgriggs@gmail.com)
 
 Zenodo archive - 
-[![DOI](https://zenodo.org/badge/755770495.svg)](https://zenodo.org/doi/10.5281/zenodo.10645590)
+[![DOI](https://zenodo.org/badge/755770495.svg)](https://zenodo.org/doi/10.5281/zenodo.15122175)
 
 ==============================
 
@@ -56,7 +56,7 @@ Griggs, W.S., Norman, S.L., Tanter, M., Liu, C., Christopoulos, V., Shapiro, M.G
     ```
     *note: If you are interested in contributing, please get in touch with the authors (Whitney or Sumner). In the meantime, feel free to submit issues and/or feature requests.*
 
-2. Download paired dataset from [CaltechData](https://doi.org/10.22002/9e80t-xhc12) and unzip in a location that is convenient.
+2. Download paired dataset from [CaltechData](https://doi.org/10.22002/p5jan-02r60) and unzip in a location that is convenient.
 
 3. Run `setup.m` within the root folder. This will set up any necessary pathing.
 
@@ -78,8 +78,8 @@ This repository makes use of multiple MATLAB toolboxes including
  
 
 ## Authors
-* **Whitney Griggs** - [GitHub](https://github.com/wsgriggs2) | [wsgriggs@gmail.com](mailto:wsgriggs@gmail.com)
-* **Sumner Norman** - [GitHub](https://github.com/sumner15)
+* **Whitney Griggs** - [GitHub](https://github.com/wsgriggs2) | [wsgriggs@gmail.com](mailto:wsgriggs@caltech.edu)
+* **Sumner Norman** - [GitHub](https://github.com/sumner15) | [sumnern@caltech.edu](mailto:sumnern@caltech.edu)
 * **Vasileios Christopolous** - [vchristo@usc.edu](mailto:vchristo@usc.edu) 
 
 
