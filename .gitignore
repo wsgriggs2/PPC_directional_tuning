@@ -2,5 +2,6 @@
 
 *.asv
 
-*.mat
+data_path.mat
+angular_error*.mat
 *.DS_Store
