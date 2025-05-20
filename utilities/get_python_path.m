@@ -22,10 +22,10 @@ if strcmp(user,'wsgriggs') && contains(computer, 'RHDVFAL')
         path = 'C:\Users\wsgriggs\AppData\Local\Programs\Python\Python311\python.exe';
 
 % Whitney on Mac
-elseif strcmp(user, 'wsgriggs') && contains(computer, 'Whitneys-MacBook')
+elseif strcmp(user, 'wsgriggs')
    path = '/Users/wsgriggs/miniforge3/bin/python';
-elseif strcmp(user, 'wsgriggs') && contains(mac_address, 'f8:4d:89:6f:ea:f6')
-   path = '/Users/wsgriggs/miniforge3/bin/python';
+else
+    error('User path to Python distribution not defined yet. Please modify code accordingly.')
 end
 
 % make sure our file separators are correct
