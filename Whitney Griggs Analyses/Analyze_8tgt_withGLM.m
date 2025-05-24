@@ -787,9 +787,23 @@ if savePlots && ~useDynamicPositioning
     saveas(fig_directionalresponse, strrep(filename_ROI_overlay, '.svg', '.fig'), 'fig');
 end
 
-%% How many voxels inside or outside of LIP are directionally tuned?
-region_names = {'LIP', 'PRR'};
-filename_suffix = '_restrictiveLIP';
+
+
+%% How many voxels within each anatomically-defined region are directionally tuned?
+% Quantification of directional activity within non-LIP regions.
+show_subfigures = true;
+switch Session
+    case 102
+region_names = {'Area 7op', 'Area 7a/b', 'LIP', 'VIP', 'MIP', 'Area 5', 'MP'}; %S102
+    case 76
+region_names = {'Area 7op', 'Area 7a/b', 'LIP', 'VIP', 'MIP', 'Area 5', 'Area 1/2', 'Area 23c'}; %76
+    case 52
+region_names = {'Area 7op', 'Area 7a/b', 'LIP', 'VIP', 'MIP', 'Area 5'}; %S52
+    otherwise
+        error('Region names not defined for %d', Session);
+end
+num_regions = length(region_names);
+filename_suffix = '_manyRegions';
 
 
 if size(sessionRunList, 1) > 1
@@ -797,6 +811,7 @@ if size(sessionRunList, 1) > 1
     if all(sessionRunList(:, 1) == sessionRunList(1, 1))
         standard_filename = strcat('Anatomical_ROI_S', num2str(Session), '_R', num2str(sessionRunList(1, 2)), '.mat');
         custom_filename = strrep(standard_filename, '.mat', strcat(filename_suffix, '.mat'));
+
 
         ROI_table = get_roi_info(Session, sessionRunList(1, 2), angiogram, UF, ...
             'region_names', region_names, ...
@@ -816,59 +831,46 @@ else
         'pixelsize', pixelsize, ...
         'custom_filename', custom_filename);
 end
-% Select LIP
-LIP_indx = strcmp('LIP', ROI_table.Properties.RowNames);
 
-% Define LIP mask
-LIP_boundary = cell2mat(ROI_table{LIP_indx, 'Boundary'});
-LIP_mask = poly2mask(LIP_boundary(:, 1), LIP_boundary(:, 2), yPix, xPix);
+%master figure with all regions superimposed with activation map
+significant_voxels_in_image = double(~pvalue_glm_mask);
+significant_voxels_in_image(significant_voxels_in_image==0) = NaN;
+significant_voxels_in_image(1,1) = 0;
 
-% Create mask for activated voxels
-significant_LIP_mask = ~pvalue_glm_mask & LIP_mask;
-significant_nonLIP_mask = ~pvalue_glm_mask & ~LIP_mask;
+figure;
+title('Significant activation with anatomical region approximate boundaries');
 
-% How many voxels in non-LIP region are activated?
-significant_nonLIP_voxel_count = sum(significant_nonLIP_mask, 'all');
-num_nonLIP_voxels = sum(~LIP_mask, 'all');
+cmap = plotDuplexImage(X_img_mm, Z_img_mm, significant_voxels_in_image, angiogram,...
+    'colormap2use', winter, ...
+    'nonlinear_bg',2);
+[significant_voxel_count, num_region_voxels, percent_significant_voxels_region] = deal(NaN(num_regions, 1));
+warning('off', 'MATLAB:polyshape:repairedBySimplify');
+for region = 1:num_regions
+    region_indx = strcmp(region_names{region}, ROI_table.Properties.RowNames);
 
-% How many LIP voxels were activated?
-significant_LIP_voxel_count = sum(significant_LIP_mask, 'all');
-num_LIP_voxels = sum(LIP_mask, 'all');
+    % Define mask
+    region_boundary = cell2mat(ROI_table{region_indx, 'Boundary'});
+    region_boundary = region_boundary(1:end-1,:);
+    region_mask = poly2mask(region_boundary(:, 1), region_boundary(:, 2), yPix, xPix);
 
-percent_significant_voxels_nonLIP = significant_nonLIP_voxel_count/num_nonLIP_voxels;
-percent_significant_voxels_LIP = significant_LIP_voxel_count/num_LIP_voxels;
-fprintf('%0.2f %% of voxels OUTside of LIP are activated\n', percent_significant_voxels_nonLIP*100);
-fprintf('%0.2f %% of voxels INside LIP are activated\n', percent_significant_voxels_LIP*100);
+    % Create mask for activated voxels
+    significant_voxels_in_region_mask = ~pvalue_glm_mask & region_mask;
 
+    % How many voxels activated?
+    significant_voxel_count(region) = sum(significant_voxels_in_region_mask, 'all');
+    num_region_voxels(region) = sum(region_mask, 'all');
 
-% Show how many voxels within each region
-show_figure = true;
-if show_figure
+    percent_significant_voxels_region(region) = significant_voxel_count(region)/num_region_voxels(region)*100;
+    fprintf('%0.2f %% of voxels within %s are activated\n', percent_significant_voxels_region(region), region_names{region}); 
 
-    % Define LIP boundary in mm space
-    LIP_boundary_X = LIP_boundary(:, 1)*pixelsize;
-    LIP_boundary_Z = LIP_boundary(:, 2)*pixelsize+min(Z_img_mm);
-    LIP_boundary_mm = polyshape(LIP_boundary_X, LIP_boundary_Z);
+    % Define region boundary in mm space
+    region_boundary_X = region_boundary(:, 1)*pixelsize;
+    region_boundary_Z = region_boundary(:, 2)*pixelsize+min(Z_img_mm);
+    region_boundary_mm = polyshape(region_boundary_X, region_boundary_Z);
 
-    % Map logical maps to double for plotting
-    significant_LIP_mask_withNaN = double(significant_LIP_mask);
-    significant_nonLIP_mask_withNaN = 2*double(significant_nonLIP_mask);
-
-    % Multiplex the two masks
-    significant_activation_withNaN = significant_LIP_mask_withNaN + significant_nonLIP_mask_withNaN;
-    significant_activation_withNaN(significant_activation_withNaN==0) = NaN;
-
-    % Create master figure
-    figure;
-    % View LIP and nonLIP activation
-    cmap = plotDuplexImage(X_img_mm, Z_img_mm, significant_activation_withNaN, angiogram,...
-        'colormap2use', PositiveNegativeColormap, ...
-        'nonlinear_bg',2);
-    title('Activated voxels with LIP boundary shown');
-
-    % Plot LIP boundary
+    % Plot region boundary
     hold on;
-    plot(LIP_boundary_mm, ...
+    plot(region_boundary_mm, ...
         'EdgeColor', 'w', ...
         'LineWidth', 1, ...
         'FaceAlpha', 0, ...
@@ -876,6 +878,9 @@ if show_figure
     hold off;
 end
 
+% Reset to max image size
+xlim([min(X_img_mm), max(X_img_mm)]);
+ylim([min(Z_img_mm), max(Z_img_mm)]);
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%% Tuning Curve Analysis %%%%%%%%%%%%%%%%%%%%%%%%

@@ -94,7 +94,14 @@ if create_new_ROIs
         smoothed_points = fnplt(cscvn([AnatomicalPolygon_info{region, 1}(:, 1)' AnatomicalPolygon_info{region, 1}(1, 1);
             AnatomicalPolygon_info{region, 1}(:, 2)'  AnatomicalPolygon_info{region, 1}(1, 2)]));
         
-        AnatomicalPolygon_info{region, 1} = smoothed_points';
+        % If smoothed ROI goes out of figure bounds, define edge to be
+        % figure bound.
+        x_smoothed = smoothed_points(1, :);
+        y_smoothed = smoothed_points(2, :);
+        x_smoothed(x_smoothed>xPix)=xPix; x_smoothed(x_smoothed<0)=0;
+        y_smoothed(y_smoothed>yPix)=yPix; y_smoothed(y_smoothed<0)=0;
+        
+        AnatomicalPolygon_info{region, 1} = [x_smoothed' y_smoothed'];
     end
     
     % Create the rotation matrices for each region. This can then
